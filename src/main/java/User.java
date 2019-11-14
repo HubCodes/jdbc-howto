@@ -1,3 +1,6 @@
+import lombok.ToString;
+
+@ToString
 public class User {
     public int id;
 
