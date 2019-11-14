@@ -2,6 +2,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.CompletableFuture;
 
 public class UserDAO {
     private Connection connection;
@@ -21,33 +22,33 @@ public class UserDAO {
         }
     }
 
-    public User getUser(int id) {
-        try {
-            select.setInt(1, id);
-            ResultSet result = select.executeQuery();
+    public CompletableFuture<User> getUser(int id) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                select.setInt(1, id);
+                ResultSet result = select.executeQuery();
 
-            if (result.next()) {
-                int pk = result.getInt(1);
-                String name = result.getString(2);
-                String desc = result.getString(3);
+                if (result.next()) {
+                    int pk = result.getInt(1);
+                    String name = result.getString(2);
+                    String desc = result.getString(3);
 
-                select.clearParameters();
+                    select.clearParameters();
 
-                System.out.printf("id: %d, name: %s, desc: %s\n", pk, name, desc);
+                    User user = new User();
+                    user.id = pk;
+                    user.name = name;
+                    user.desc = desc;
 
-                User user = new User();
-                user.id = pk;
-                user.name = name;
-                user.desc = desc;
+                    return user;
+                }
 
-                return user;
+                return null;
+            } catch (SQLException e) {
+                e.printStackTrace();
+
+                return null;
             }
-
-            return null;
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-            return null;
-        }
+        });
     }
 }
